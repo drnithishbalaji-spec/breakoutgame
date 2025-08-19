@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Breakout Game</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* General body styling */
+        body {
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #f0f4f8, #c8d9e7); /* Soft gradient background */
+            color: #333;
+            overflow: hidden; /* Prevent scrollbars */
+        }
+
+        /* Game container styling */
+        .game-container {
+            background-color: #ffffff;
+            border-radius: 20px; /* Rounded corners for the container */
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15); /* Soft shadow */
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 90%; /* Max width for responsiveness */
+            width: 500px; /* Base width */
+            margin: 20px; /* Margin around the container */
+        }
+
+        /* Game title */
+        h1 {
+            color: #2c3e50;
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-size: 2.2em;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.05);
+        }
+
+        /* Canvas styling */
+        canvas {
+            background-color: #e0f2f7; /* Light blue canvas background */
+            border: 2px solid #a7d9eb; /* Matching border */
+            border-radius: 10px; /* Rounded corners for the canvas */
+            display: block;
+            touch-action: none; /* Prevent browser touch actions on canvas */
+            width: 100%; /* Make canvas width fluid */
+            height: auto; /* Maintain aspect ratio */
+            max-height: 350px; /* Max height to prevent excessive stretching on tall screens */
+            box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Info container (score, lives) */
+        .info-container {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-top: 15px;
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #555;
+        }
+
+        .info-item {
+            padding: 5px 10px;
+            background-color: #f7f9fc;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Button styling */
+        .game-button {
+            background: linear-gradient(180deg, #4CAF50, #45a049); /* Green gradient */
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px; /* Pill-shaped button */
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: bold;
+            margin-top: 25px;
+            transition: all 0.3s ease; /* Smooth transitions for hover/active states */
+            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3);
+        }
+
+        .game-button:hover {
+            background: linear-gradient(180deg, #45a049, #3d8c41);
+            box-shadow: 0 8px 20px rgba(76, 175, 80, 0.4);
+            transform: translateY(-2px); /* Slight lift on hover */
+        }
+
+        .game-button:active {
+            background: linear-gradient(180deg, #3d8c41, #367c39);
+            transform: translateY(0); /* Press effect */
+            box-shadow: 0 3px 10px rgba(76, 175, 80, 0.2);
+        }
+
+        /* Message box styling */
+        .message-box {
+            position: fixed; /* Fixed position to overlay on top */
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6); /* Semi-transparent black overlay */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000; /* Ensure it's on top */
+            opacity: 0; /* Initially hidden */
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .message-box.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .message-content {
+            background-color: #ffffff;
+            padding: 30px 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
+            text-align: center;
+            max-width: 80%;
+            font-size: 1.3em;
+            color: #2c3e50;
+        }
+
+        .message-content h2 {
+            margin-top: 0;
+            color: #e74c3c; /* Red for game over */
+            font-size: 1.8em;
+            margin-bottom: 15px;
+        }
+
+        .message-content p {
+            margin-bottom: 25px;
+            line-height: 1.4;
+        }
+
+        .message-content .close-button {
+            background: linear-gradient(180deg, #3498db, #2980b9); /* Blue gradient */
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+        }
+
+        .message-content .close-button:hover {
+            background: linear-gradient(180deg, #2980b9, #24719c);
+            box-shadow: 0 6px 15px rgba(52, 152, 219, 0.4);
+            transform: translateY(-1px);
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 600px) {
+            .game-container {
+                padding: 15px;
+            }
+
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .info-container {
+                flex-direction: column; /* Stack score and lives on small screens */
+                align-items: center;
+            }
+
+            .info-item {
+                margin-bottom: 10px;
+                width: calc(100% - 20px); /* Adjust width for padding */
+                text-align: center;
+            }
+
+            .game-button {
+                padding: 10px 20px;
+                font-size: 1em;
+            }
+
+            .message-content {
+                padding: 20px 30px;
+                font-size: 1.1em;
+            }
+
+            .message-content h2 {
+                font-size: 1.5em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>Breakout Game</h1>
+        <canvas id="breakoutCanvas"></canvas>
+        <div class="info-container">
+            <div id="scoreDisplay" class="info-item">Score: 0</div>
+            <div id="livesDisplay" class="info-item">Lives: 3</div>
+        </div>
+        <button id="startButton" class="game-button">Start Game</button>
+    </div>
+
+    <!-- Message box for game status -->
+    <div id="messageBox" class="message-box">
+        <div class="message-content">
+            <h2 id="messageTitle"></h2>
+            <p id="messageText"></p>
+            <button id="closeMessageButton" class="close-button">OK</button>
+        </div>
+    </div>
+
+    <script>
+        // Get canvas and its 2D rendering context
+        const canvas = document.getElementById('breakoutCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Get score and lives display elements
+        const scoreDisplay = document.getElementById('scoreDisplay');
+        const livesDisplay = document.getElementById('livesDisplay');
+        const startButton = document.getElementById('startButton');
+
+        // Get message box elements
+        const messageBox = document.getElementById('messageBox');
+        const messageTitle = document.getElementById('messageTitle');
+        const messageText = document.getElementById('messageText');
+        const closeMessageButton = document.getElementById('closeMessageButton');
+
+        // --- Game Variables ---
+        let gameRunning = false;
+        let score = 0;
+        let lives = 3;
+
+        // Ball properties
+        const ball = {
+            x: 0, // Will be set in setupCanvas
+            y: 0, // Will be set in setupCanvas
+            radius: 10,
+            dx: 2, // Ball speed in x direction
+            dy: -2 // Ball speed in y direction
+        };
+
+        // Paddle properties
+        const paddle = {
+            height: 10,
+            width: 75,
+            x: 0, // Will be set in setupCanvas
+            speed: 7,
+            rightPressed: false,
+            leftPressed: false
+        };
+
+        // Brick properties
+        const brick = {
+            rowCount: 5,
+            columnCount: 8,
+            width: 60,
+            height: 20,
+            padding: 10,
+            offsetTop: 0,    // Will be calculated in setupCanvas
+            offsetLeft: 0,   // Will be calculated in setupCanvas
+            color: '#2ecc71' // Green bricks
+        };
+
+        // Array to store bricks
+        const bricks = [];
+
+        // --- Game Initialization and Reset ---
+
+        // Function to initialize bricks
+        function initBricks() {
+            bricks.length = 0; // Clear existing bricks
+            for (let c = 0; c < brick.columnCount; c++) {
+                bricks[c] = [];
+                for (let r = 0; r < brick.rowCount; r++) {
+                    bricks[c][r] = { x: 0, y: 0, status: 1 }; // Status 1 means brick is present
+                }
+            }
+        }
+
+        // Function to reset game state
+        function resetGame() {
+            score = 0;
+            lives = 3;
+            ball.dx = 2; // Reset ball speed
+            ball.dy = -2;
+            updateDisplay();
+            initBricks();
+            resetBallAndPaddle();
+            gameRunning = false; // Game starts in a paused state
+            startButton.style.display = 'block'; // Show start button
+        }
+
+        // Function to reset ball and paddle position
+        function resetBallAndPaddle() {
+            ball.x = canvas.width / 2;
+            ball.y = canvas.height - 30;
+            paddle.x = (canvas.width - paddle.width) / 2;
+        }
+
+        // --- Drawing Functions ---
+
+        // Draw the ball
+        function drawBall() {
+            ctx.beginPath();
+            ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+            ctx.fillStyle = '#e74c3c'; // Red ball
+            ctx.fill();
+            ctx.closePath();
+        }
+
+        // Draw the paddle
+        function drawPaddle() {
+            ctx.beginPath();
+            ctx.rect(paddle.x, canvas.height - paddle.height, paddle.width, paddle.height);
+            ctx.fillStyle = '#3498db'; // Blue paddle
+            ctx.fill();
+            ctx.closePath();
+        }
+
+        // Draw the bricks
+        function drawBricks() {
+            for (let c = 0; c < brick.columnCount; c++) {
+                for (let r = 0; r < brick.rowCount; r++) {
+                    if (bricks[c][r].status === 1) { // Only draw if brick is present
+                        const brickX = (c * (brick.width + brick.padding)) + brick.offsetLeft;
+                        const brickY = (r * (brick.height + brick.padding)) + brick.offsetTop;
+                        bricks[c][r].x = brickX;
+                        bricks[c][r].y = brickY;
+                        ctx.beginPath();
+                        ctx.rect(brickX, brickY, brick.width, brick.height);
+                        ctx.fillStyle = brick.color;
+                        ctx.fill();
+                        ctx.closePath();
+                    }
+                }
+            }
+        }
+
+        // --- Game Logic ---
+
+        // Handle ball movement and wall collisions
+        function moveBall() {
+            // Ball hits left or right wall
+            if (ball.x + ball.dx > canvas.width - ball.radius || ball.x + ball.dx < ball.radius) {
+                ball.dx = -ball.dx;
+            }
+
+            // Ball hits top wall
+            if (ball.y + ball.dy < ball.radius) {
+                ball.dy = -ball.dy;
+                // Slightly increase ball speed when hitting the top wall for more dynamic play
+                ball.dy *= 1.05; // Increase by 5%
+                if (Math.abs(ball.dy) > 6) ball.dy = Math.sign(ball.dy) * 6; // Cap max speed
+            }
+            // Ball hits bottom (game over condition)
+            else if (ball.y + ball.dy > canvas.height - ball.radius - paddle.height) {
+                // Check if ball hits paddle
+                if (ball.x > paddle.x && ball.x < paddle.x + paddle.width) {
+                    // Make ball slower when hitting the paddle
+                    ball.dy = -Math.abs(ball.dy) * 0.7; // Reverse direction and reduce speed to 70%
+                    if (Math.abs(ball.dy) < 2) ball.dy = Math.sign(ball.dy) * 2; // Ensure min speed
+
+                    // Adjust ball DX based on where it hit the paddle for more dynamic bounces
+                    const hitPos = (ball.x - (paddle.x + paddle.width / 2)) / (paddle.width / 2);
+                    ball.dx = hitPos * 3; // Max 3, min -3 based on hit position
+                } else {
+                    // Ball missed paddle, lose a life
+                    lives--;
+                    updateDisplay();
+                    if (lives === 0) {
+                        gameRunning = false;
+                        showMessageBox("Game Over!", `You ran out of lives. Your final score is ${score}.`);
+                        startButton.style.display = 'block'; // Show start button
+                    } else {
+                        resetBallAndPaddle();
+                        // Pause briefly before restarting after losing a life
+                        setTimeout(() => {
+                            if (gameRunning) { // Only resume if game is still active
+                                // No action needed here, animation loop will continue
+                            }
+                        }, 500);
+                    }
+                }
+            }
+
+            ball.x += ball.dx;
+            ball.y += ball.dy;
+        }
+
+        // Handle paddle movement
+        function movePaddle() {
+            if (paddle.rightPressed && paddle.x < canvas.width - paddle.width) {
+                paddle.x += paddle.speed;
+            } else if (paddle.leftPressed && paddle.x > 0) {
+                paddle.x -= paddle.speed;
+            }
+        }
+
+        // Collision detection for bricks
+        function collisionDetection() {
+            for (let c = 0; c < brick.columnCount; c++) {
+                for (let r = 0; r < brick.rowCount; r++) {
+                    const b = bricks[c][r];
+                    if (b.status === 1) { // If brick is active
+                        if (ball.x > b.x && ball.x < b.x + brick.width &&
+                            ball.y > b.y && ball.y < b.y + brick.height) {
+                            ball.dy = -ball.dy; // Reverse ball direction
+                            b.status = 0; // Mark brick as broken
+                            score += 10; // Increase score
+                            updateDisplay();
+
+                            // Check for win condition
+                            if (isGameWon()) {
+                                gameRunning = false;
+                                showMessageBox("You Win!", `Congratulations! You broke all the bricks. Your score is ${score}.`);
+                                startButton.style.display = 'block'; // Show start button
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Check if all bricks are broken
+        function isGameWon() {
+            for (let c = 0; c < brick.columnCount; c++) {
+                for (let r = 0; r < brick.rowCount; r++) {
+                    if (bricks[c][r].status === 1) {
+                        return false; // Found an unbroken brick
+                    }
+                }
+            }
+            return true; // All bricks are broken
+        }
+
+        // Update score and lives display
+        function updateDisplay() {
+            scoreDisplay.textContent = `Score: ${score}`;
+            livesDisplay.textContent = `Lives: ${lives}`;
+        }
+
+        // --- Event Listeners ---
+
+        // Keyboard press handlers
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Right' || e.key === 'ArrowRight') {
+                paddle.rightPressed = true;
+            } else if (e.key === 'Left' || e.key === 'ArrowLeft') {
+                paddle.leftPressed = true;
+            }
+        });
+
+        document.addEventListener('keyup', (e) => {
+            if (e.key === 'Right' || e.key === 'ArrowRight') {
+                paddle.rightPressed = false;
+            } else if (e.key === 'Left' || e.key === 'ArrowLeft') {
+                paddle.leftPressed = false;
+            }
+        });
+
+        // Touch input for mobile devices
+        canvas.addEventListener('touchstart', (e) => {
+            // Prevent scrolling on touch
+            e.preventDefault();
+            const touchX = e.touches[0].clientX;
+            const canvasRect = canvas.getBoundingClientRect();
+            // Move paddle to touch position (relative to canvas)
+            paddle.x = touchX - canvasRect.left - paddle.width / 2;
+            // Ensure paddle stays within bounds
+            if (paddle.x < 0) paddle.x = 0;
+            if (paddle.x > canvas.width - paddle.width) paddle.x = canvas.width - paddle.width;
+        });
+
+        canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            const touchX = e.touches[0].clientX;
+            const canvasRect = canvas.getBoundingClientRect();
+            paddle.x = touchX - canvasRect.left - paddle.width / 2;
+            if (paddle.x < 0) paddle.x = 0;
+            if (paddle.x > canvas.width - paddle.width) paddle.x = canvas.width - paddle.width;
+        });
+
+        // Start button handler
+        startButton.addEventListener('click', () => {
+            if (!gameRunning) {
+                resetGame(); // Reset game state if starting new game
+                gameRunning = true;
+                startButton.style.display = 'none'; // Hide start button
+                gameLoop(); // Start the game loop
+            }
+        });
+
+        // Close message box handler
+        closeMessageButton.addEventListener('click', () => {
+            messageBox.classList.remove('show');
+            resetGame(); // Reset game after message is closed
+        });
+
+        // --- Message Box Functions ---
+        function showMessageBox(title, message) {
+            messageTitle.textContent = title;
+            messageText.textContent = message;
+            messageBox.classList.add('show');
+        }
+
+        // --- Game Loop ---
+        function gameLoop() {
+            // Clear canvas for next frame
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw game elements
+            drawBricks();
+            drawBall();
+            drawPaddle();
+
+            if (gameRunning) {
+                // Update game state
+                moveBall();
+                movePaddle();
+                collisionDetection();
+            }
+
+            // Request next frame
+            requestAnimationFrame(gameLoop);
+        }
+
+        // --- Initial Setup ---
+
+        // Function to set canvas dimensions correctly and call resetGame
+        function setupCanvas() {
+            // Get the computed style of the canvas to determine its actual rendered size
+            const computedStyle = getComputedStyle(canvas);
+            let targetWidth = parseFloat(computedStyle.width);
+            let targetHeight = parseFloat(computedStyle.height);
+
+            // Fallback if computed width is 0 or NaN, or too small (e.g., if flexbox hasn't rendered yet)
+            // Use parent width as a base with padding considerations
+            if (!targetWidth || targetWidth < 100) {
+                targetWidth = canvas.parentElement.clientWidth - 50;
+                if (targetWidth < 300) targetWidth = 300; // Ensure a minimum reasonable width
+            }
+
+            // Calculate height based on a desired aspect ratio if height isn't explicitly set by CSS
+            // or if height comes out to 0 from computedStyle.
+            if (!targetHeight || targetHeight < 100) {
+                targetHeight = targetWidth * (2 / 3); // Example: 3:2 aspect ratio
+            }
+
+            // Ensure a minimum height for smaller screens, regardless of aspect ratio calculation
+            if (targetHeight < 300) {
+                targetHeight = 300;
+            }
+
+            // Apply calculated dimensions to canvas drawing surface
+            canvas.width = targetWidth;
+            canvas.height = targetHeight;
+
+            // Dynamically calculate brick offsets to center them horizontally
+            const totalBrickWidth = (brick.columnCount * (brick.width + brick.padding)) - brick.padding;
+            brick.offsetLeft = (canvas.width - totalBrickWidth) / 2;
+            // Position bricks vertically, roughly 20% down from the top
+            const totalBrickHeight = (brick.rowCount * (brick.height + brick.padding)) - brick.padding;
+            brick.offsetTop = Math.max(30, (canvas.height * 0.2) - (totalBrickHeight / 2)); // Ensure min 30px offset
+
+            // Adjust ball/paddle initial positions as canvas size might have changed
+            ball.x = canvas.width / 2;
+            ball.y = canvas.height - 30;
+            paddle.x = (canvas.width - paddle.width) / 2;
+
+            resetGame(); // Initialize game components for the first time
+        }
+
+        // Set up canvas on window load
+        window.onload = setupCanvas;
+
+        // Re-setup canvas on window resize to ensure responsiveness
+        window.onresize = setupCanvas;
+
+    </script>
+</body>
+</html>
