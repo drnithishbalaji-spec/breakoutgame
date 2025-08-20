@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<!-- saved from url=(0132)blob:https://4yq9vpn12yjm7cyo297z05o0vkccz1l74114yed6znx23mm2rt-h794075209.scf.usercontent.goog/102056c5-0e46-454a-9895-7f1e08845c55 -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><script>(function(firebaseConfig, initialAuthToken, appId) {
+        window.__firebase_config = firebaseConfig;
+        window.__initial_auth_token = initialAuthToken;
+        window.__app_id = appId;
+            })("\n{\n  \"apiKey\": \"AIzaSyCqyCcs2R2e7AegGjvFAwG98wlamtbHvZY\",\n  \"authDomain\": \"bard-frontend.firebaseapp.com\",\n  \"projectId\": \"bard-frontend\",\n  \"storageBucket\": \"bard-frontend.firebasestorage.app\",\n  \"messagingSenderId\": \"175205271074\",\n  \"appId\": \"1:175205271074:web:2b7bd4d34d33bf38e6ec7b\"\n}\n","eyJhbGciOiJSUzI1NiIsImtpZCI6ImY3NWQ2NDhiMmFkZjUwOWU5MTEzMWVlYjQ2MzRlYTBhNGUxOTg3ZDUiLCJ0eXAiOiJKV1QifQ.eyJzdWIiOiJmaXJlYmFzZS1hZG1pbnNkay1mYnN2Y0BiYXJkLWZyb250ZW5kLmlhbS5nc2VydmljZWFjY291bnQuY29tIiwiYXVkIjoiaHR0cHM6XC9cL2lkZW50aXR5dG9vbGtpdC5nb29nbGVhcGlzLmNvbVwvZ29vZ2xlLmlkZW50aXR5LmlkZW50aXR5dG9vbGtpdC52MS5JZGVudGl0eVRvb2xraXQiLCJ1aWQiOiIxMDgwOTE0NTEzMjg4MjEyNDA5NSIsImlzcyI6ImZpcmViYXNlLWFkbWluc2RrLWZic3ZjQGJhcmQtZnJvbnRlbmQuaWFtLmdzZXJ2aWNlYWNjb3VudC5jb20iLCJjbGFpbXMiOnsiYXBwSWQiOiJjXzc0ZTRmMjNiNmE1YWM2YmFfZmF0aGVycy1kYXktZ2FtZS1hcHAtNDgyIn0sImV4cCI6MTc1NTY4NDE2NywiaWF0IjoxNzU1NjgwNTY3LCJhbGciOiJSUzI1NiJ9.MMMWCvLtH-tY_3H7yhe93WVuNbO4J8SimRorRB6tJgkUJrBVGyvc7gA7U0OA25EdAoE9_VyxgesCj_5SsxIf5nDNPv__l8fndL9Khw_iW9KRbS6tltnSGIrWylYPqm-qBDvGSBU5Wf0oqOCC8FJS8ln7EB1aw1IOPqbbH2TzA6hqA7kwcUWtU-gny733preh3la-OFY1i7cOT97_gup_vvm3S-_-QOVyuKJ4LSXx4Y5ByBelK8-Ojrx3Tc0a_XLnuqbY4vkV6cEsMQJyjM3QfOPyibg1I1urqOTEBN80MRHMpeP2W30yo8p0iLPc5mzcr1qLMyrMWReSWoE1W-Vo3Q","c_74e4f23b6a5ac6ba_fathers-day-game-app-482")</script><script>(function() {
+  // Ensure this script is executed only once
+  if (window.firebaseAuthBridgeScriptLoaded) {
+    return;
+  }
+  window.firebaseAuthBridgeScriptLoaded = true;
+
+  let nextTokenPromiseId = 0;
+
+  // Stores { resolve, reject } for ongoing token requests
+  const pendingTokenPromises = {};
+
+  // Listen for messages from the Host Application
+  window.addEventListener('message', function(event) {
+
+    const messageData = event.data;
+
+  if (messageData && messageData.type === 'RESOLVE_NEW_FIREBASE_TOKEN') {
+      const { success, token, error, promiseId } = messageData ?? {};
+      if (pendingTokenPromises[promiseId]) {
+        if (success) {
+          pendingTokenPromises[promiseId].resolve(token);
+        } else {
+          pendingTokenPromises[promiseId].reject(new Error(error || 'Token refresh failed from host.'));
+        }
+        delete pendingTokenPromises[promiseId];
+      }
+    }
+  });
+
+  // Expose a function for the Generated App to request a new Firebase token
+  window.requestNewFirebaseToken = function() {
+    const currentPromiseId = nextTokenPromiseId++;
+    const promise = new Promise((resolve, reject) => {
+      pendingTokenPromises[currentPromiseId] = { resolve, reject };
+    });
+    if (window.parent && window.parent !== window) {
+      window.parent.postMessage({
+        type: 'REQUEST_NEW_FIREBASE_TOKEN',
+        promiseId: currentPromiseId
+      }, '*');
+    } else {
+      pendingTokenPromises[currentPromiseId].reject(new Error('No parent window to request token from.'));
+      delete pendingTokenPromises[currentPromiseId];
+    }
+    return promise;
+  };
+})();</script><script>
+let realOriginalGetUserMedia = null;
+if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+  realOriginalGetUserMedia = navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
+}
+
+(function() {
+  if (navigator.mediaDevices && navigator.mediaDevices.__proto__) {
+    try {
+      Object.defineProperty(navigator.mediaDevices.__proto__, 'getUserMedia', {
+        get: function() {
+          return undefined; // Or throw an error
+        },
+        configurable: false
+      });
+    } catch (error) {
+      console.error("Error defining prototype getter:", error);
+    }
+  }
+})();
+
+(function() {
+  const pendingMediaResolvers = {};
+  let nextMediaPromiseId = 0;
+
+  function requestMediaPermissions(constraints) {
+    const mediaPromiseId = nextMediaPromiseId++;
+    const promise = new Promise((resolve, reject) => {
+      pendingMediaResolvers[mediaPromiseId] = (granted) => {
+        delete pendingMediaResolvers[mediaPromiseId];
+        resolve(granted);
+      };
+    });
+
+    window.parent.postMessage({
+      type: 'requestMediaPermission',
+      constraints: constraints,
+      promiseId: mediaPromiseId,
+    }, '*');
+
+    return promise;
+  }
+
+  let originalGetUserMedia = realOriginalGetUserMedia;
+
+  function interceptGetUserMedia() {
+    if (navigator.mediaDevices) {
+      Object.defineProperty(navigator.mediaDevices, 'getUserMedia', {
+        value: function(constraints) {
+          return requestMediaPermissions(constraints).then((granted) => {
+            if (granted) {
+              if (originalGetUserMedia) {
+                return originalGetUserMedia(constraints);
+              } else {
+                throw new Error("Original getUserMedia not available.");
+              }
+            } else {
+              throw new DOMException('Permission denied', 'NotAllowedError');
+            }
+          });
+        },
+        writable: false,
+        configurable: false
+      });
+    }
+  }
+
+  interceptGetUserMedia();
+
+  const observer = new MutationObserver(function(mutationsList, observer) {
+    for (const mutation of mutationsList) {
+      if (mutation.type === 'reconfigured' && mutation.name === 'getUserMedia' && mutation.object === navigator.mediaDevices) {
+        interceptGetUserMedia();
+      } else if (mutation.type === 'attributes' && mutation.attributeName === 'getUserMedia' && mutation.target === navigator.mediaDevices) {
+        interceptGetUserMedia();
+      } else if (mutation.type === 'childList' && mutation.addedNodes) {
+        mutation.addedNodes.forEach(node => {
+          if (node === navigator.mediaDevices) {
+            interceptGetUserMedia();
+          }
+        });
+      }
+    }
+  });
+
+  function interceptSpeechRecognition() {
+    if (!window.SpeechRecognition && !window.webkitSpeechRecognition) {
+      return;
+    }
+
+    const OriginalSpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    const SpeechRecognitionWrapper = function(...args) {
+      const recognizer = new OriginalSpeechRecognition(...args);
+      const originalStart = recognizer.start.bind(recognizer);
+
+      recognizer.start = function() {
+        requestMediaPermissions({ audio: true }).then(granted => {
+          if (granted) {
+            originalStart();
+          } else {
+            const errorEvent = new SpeechRecognitionErrorEvent('error');
+            errorEvent.error = 'not-allowed'; // This is the standard error for permission denial.
+            recognizer.dispatchEvent(errorEvent);
+          }
+        });
+      };
+
+      return recognizer;
+    };
+
+    SpeechRecognitionWrapper.prototype = OriginalSpeechRecognition.prototype;
+    SpeechRecognitionWrapper.prototype.constructor = SpeechRecognitionWrapper;
+
+    if (window.SpeechRecognition) {
+      window.SpeechRecognition = SpeechRecognitionWrapper;
+    }
+    if (window.webkitSpeechRecognition) {
+      window.webkitSpeechRecognition = SpeechRecognitionWrapper;
+    }
+  }
+
+  interceptSpeechRecognition();
+
+  window.addEventListener('message', function(event) {
+    if (event.data) {
+      if (event.data.type === 'resolveMediaPermission') {
+        const { promiseId, granted } = event.data;
+        if (pendingMediaResolvers[promiseId]) {
+          pendingMediaResolvers[promiseId](granted);
+        }
+      }
+    }
+  });
+
+})();</script><script>((function(modelInformation) {
+  const originalFetch = window.fetch;
+  // TODO: b/421908508 - Move these out of the script and match all generative AI model calls.
+  let googleLlmBaseApiUrls = [
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.textModelName + ':streamGenerateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.textModelName + ':generateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageModelName + ':predict',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageModelName + ':predictLongRunning',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageEditModelName + ':generateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.videoModelName + ':predict',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.videoModelName + ':predictLongRunning',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.ttsModelName + ':generateContent',
+  ];
+  modelInformation.deprecatedTextModelNames.forEach((modelName) => {
+    googleLlmBaseApiUrls.push(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':streamGenerateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent',
+    );
+  });
+
+  const pendingFetchResolvers = {};
+  let nextPromiseId = 0;
+
+  function handleStringInput(input, optionsArgument) {
+    const actualUrl = input;
+    const fetchCallArgs = [actualUrl, optionsArgument];
+    const effectiveOptions = optionsArgument || {};
+    const bodyForApiKeyCheck = effectiveOptions.body;
+    const bodyForPostMessage = effectiveOptions.body;
+    return { actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage };
+  }
+
+  function handleRequestInput(input, optionsArgument) {
+    const actualUrl = input.url;
+    const fetchCallArgs = [input, optionsArgument];
+    const effectiveOptions = { method: input.method, headers: new Headers(input.headers) };
+    let bodyForApiKeyCheck;
+    let bodyForPostMessage;
+
+    if (optionsArgument) {
+      if (optionsArgument.method) effectiveOptions.method = optionsArgument.method;
+      if (optionsArgument.headers) effectiveOptions.headers = new Headers(optionsArgument.headers);
+      if ('body' in optionsArgument) {
+        bodyForApiKeyCheck = optionsArgument.body;
+        bodyForPostMessage = optionsArgument.body;
+      } else {
+        bodyForApiKeyCheck = undefined;
+        bodyForPostMessage = input.body;
+      }
+    } else {
+      bodyForApiKeyCheck = undefined;
+      bodyForPostMessage = input.body;
+    }
+    return { actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage };
+  }
+
+  window.fetch = function(input, optionsArgument) {
+    let actualUrl;
+    let fetchCallArgs;
+    let effectiveOptions = {};
+    let bodyForApiKeyCheck;
+    let bodyForPostMessage;
+
+    if (typeof input === 'string') {
+      ({actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage} = handleStringInput(input, optionsArgument));
+    } else if (input instanceof Request) {
+      ({actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage} = handleRequestInput(input, optionsArgument));
+    } else {
+      return originalFetch.apply(window, [input, optionsArgument]);
+    }
+
+    effectiveOptions.method = effectiveOptions.method || 'GET';
+    if (!effectiveOptions.headers) {
+      effectiveOptions.headers = new Headers();
+    }
+
+
+    if (typeof actualUrl === 'string' && googleLlmBaseApiUrls.some((url) => actualUrl.startsWith(url))) {
+      let apiKeyIsNull = true;
+
+      const regex = new RegExp("models/([^:]+)");
+      const modelNameMatch = actualUrl.match(regex);
+      const modelName = modelNameMatch ? modelNameMatch[1] : 'unspecified';
+
+
+      try {
+        const urlObject = new URL(actualUrl);  // Use URL object for robust parsing
+        const apiKeyParam = urlObject.searchParams.get('key');
+        if (apiKeyParam) {
+          apiKeyIsNull = false;
+        }
+      } catch (e) {
+        // Continue checks even if URL parsing fails
+      }
+
+      if (apiKeyIsNull && effectiveOptions.headers) {
+        const h = new Headers(effectiveOptions.headers);
+        const apiKeyHeaderValue = h.get('X-API-Key') || h.get('x-api-key');
+        if (apiKeyHeaderValue) {
+          apiKeyIsNull = false;
+          return originalFetch.apply(window, fetchCallArgs);
+        }
+      }
+
+      if (apiKeyIsNull && effectiveOptions.method && ['POST', 'PUT', 'PATCH'].includes(effectiveOptions.method.toUpperCase()) && typeof bodyForApiKeyCheck === 'string') {
+        try {
+          const bodyData = JSON.parse(bodyForApiKeyCheck);
+          if (bodyData && bodyData.apiKey) {
+            apiKeyIsNull = false;
+            return originalFetch.apply(window, fetchCallArgs);
+          }
+        } catch (e) {
+          // Ignore JSON parsing errors
+        }
+      }
+
+      if(apiKeyIsNull) {
+        const promiseId = nextPromiseId++;
+        const promise = new Promise((resolve) => {
+          pendingFetchResolvers[promiseId] = (resolvedResponse) => {
+            delete pendingFetchResolvers[promiseId];
+            resolve(resolvedResponse);
+          };
+        });
+
+        let serializedBodyForPostMessage;
+        if (typeof bodyForPostMessage === 'string' || bodyForPostMessage == null) {
+            serializedBodyForPostMessage = bodyForPostMessage;
+        } else if (bodyForPostMessage instanceof ReadableStream) {
+            serializedBodyForPostMessage = null;
+        } else {
+            try {
+                serializedBodyForPostMessage = JSON.stringify(bodyForPostMessage);
+            } catch (e) {
+                serializedBodyForPostMessage = null;
+            }
+        }
+
+        const messageOptions = {
+            method: effectiveOptions.method,
+            headers: Object.fromEntries(new Headers(effectiveOptions.headers).entries()),
+            body: serializedBodyForPostMessage
+        };
+
+        window.parent.postMessage({
+          type: 'requestFetch',
+          url: actualUrl,
+          modelName: modelName,
+          options: messageOptions,
+          promiseId: promiseId,
+        }, '*');
+
+        return promise;
+      }
+      return originalFetch.apply(window, fetchCallArgs);
+    }
+    return originalFetch.apply(window, fetchCallArgs);
+  };
+
+  window.addEventListener('message', function(event) {
+    if (event.data && event.data.type === 'resolveFetch') {
+      const { promiseId, response } = event.data;
+      if (pendingFetchResolvers[promiseId]) {
+        try {
+          const reconstructedResponse = new Response(response.body, {
+            status: response.status,
+            statusText: response.statusText,
+            headers: new Headers(response.headers),
+          });
+          pendingFetchResolvers[promiseId](reconstructedResponse);
+        } catch (error) {
+          pendingFetchResolvers[promiseId](new Response(null, { status: 500, statusText: "Interceptor Response Reconstruction Error" }));
+        }
+      }
+    }
+  });
+
+}))({"textModelName":"gemini-2.5-flash-preview-05-20","imageModelName":"imagen-3.0-generate-002","imageEditModelName":"gemini-2.0-flash-preview-image-generation","videoModelName":"veo-2.0-generate-001","ttsModelName":"gemini-2.5-flash-preview-tts","deprecatedTextModelNames":["gemini-2.0-flash","gemini-2.5-flash-preview-04-17"]})</script><script>(function() {
+  const originalConsoleLog = console.log;
+  const originalConsoleError = console.error;
+
+    /**
+   * Normalizes an error event or a promise rejection reason into a structured error object.
+   * @param {*} errorEventOrReason The error object or reason.
+   * @return {object} Structured error data { message, name, stack }.
+   */
+  function getErrorObject(errorEventOrReason) {
+    if (errorEventOrReason instanceof Error) {
+      return {
+        message: errorEventOrReason.message,
+        name: errorEventOrReason.name,
+        stack: errorEventOrReason.stack,
+      };
+    }
+    // Fallback for non-Error objects.
+    try {
+      return {
+        message: JSON.stringify(errorEventOrReason),
+        name: 'UnknownErrorType',
+        stack: null,
+      };
+    } catch (e) {
+      return {
+        message: String(errorEventOrReason),
+        name: 'UnknownErrorTypeNonStringifiable',
+        stack: null,
+      };
+    }
+  }
+
+  /**
+   * Converts an array of arguments (from log/error) into a single string.
+   * Handles Error objects specially to include their message and stack.
+   * @param {Array<*>} args - Arguments passed to console methods.
+   * @return {string} A string representation of the arguments.
+   */
+  function stringifyArgs(args) {
+    return args
+      .map((arg) => {
+        if (arg instanceof Error) {
+          const {message, stack} = arg;
+          return `Error: ${message}${stack ? ('\nStack: ' + stack) : ''}`;
+        }
+        if (typeof arg === 'object' && arg !== null) {
+          try {
+            return JSON.stringify(arg);
+          } catch (error) {
+            return '[Circular Object]';
+          }
+        } else {
+          return String(arg);
+        }
+      })
+      .join(' ');
+  }
+
+  console.log = function(...args) {
+    const logString = stringifyArgs(args);
+    window.parent.postMessage({ type: 'log', message: logString }, '*');
+    originalConsoleLog.apply(console, args);
+  };
+
+  console.error = function(...args) {
+    let errorData;
+    if (args.length > 0 && args[0] instanceof Error) {
+      const err = args[0];
+      // If the first arg is an Error, capture its details.
+      errorData = {
+        type: 'error',
+        source: 'CONSOLE_ERROR',
+        ...getErrorObject(err),
+        rawArgsString: stringifyArgs(args.slice(1)),
+        timestamp: new Date().toISOString(),
+      };
+    } else {
+      // If not an Error object, treat all args as a general error message.
+      errorData = {
+        type: 'error',
+        source: 'CONSOLE_ERROR',
+        message: stringifyArgs(args),
+        name: 'ConsoleLoggedError',
+        stack: null,
+        timestamp: new Date().toISOString(),
+      };
+    }
+    window.parent.postMessage(errorData, '*');
+    originalConsoleError.apply(console, args);
+  };
+
+  // Listen for global unhandled synchronous errors.
+  window.addEventListener('error', function(event) {
+    const errorDetails = event.error ? getErrorObject(event.error) : {
+      message: event.message,
+      name: 'GlobalError',
+      stack: null,
+      filename: event.filename,
+      lineno: event.lineno,
+      colno: event.colno,
+    };
+
+    window.parent.postMessage({
+      type: 'error',
+      source: 'global',
+      ...errorDetails,
+      message: errorDetails.message || event.message,
+      timestamp: new Date().toISOString(),
+    }, '*');
+  });
+
+  // Listen for unhandled promise rejections (asynchronous errors).
+  window.addEventListener('unhandledrejection', function(event) {
+    const errorDetails = getErrorObject(event.reason);
+
+    window.parent.postMessage({
+      type: 'error',
+      source: 'unhandledrejection',
+      ...errorDetails,
+      message: errorDetails.message || 'Unhandled Promise Rejection',
+      timestamp: new Date().toISOString(),
+    }, '*');
+  });
+
+})();</script>
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Father's Day: Find Dad's Gift!</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&amp;family=Pacifico&amp;display=swap" rel="stylesheet">
+    <style>
+        /* General body styling */
+        body {
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #e0f7fa, #b3e5fc); /* Light blue gradient for a cheerful feel */
+            color: #2c3e50;
+            overflow: hidden; /* Prevent scrollbars */
+            text-align: center;
+        }
+
+        /* Game container styling */
+        .game-container {
+            background-color: #ffffff;
+            border-radius: 20px; /* Rounded corners */
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18); /* Softer, larger shadow */
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 95%; /* More responsive width */
+            width: 600px; /* Base width */
+            margin: 20px;
+            box-sizing: border-box; /* Include padding in width */
+        }
+
+        /* Game title */
+        h1 {
+            font-family: 'Pacifico', cursive; /* A more festive font for the title */
+            color: #3f51b5; /* Deeper blue */
+            margin-top: 0;
+            margin-bottom: 25px;
+            font-size: 2.8em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        /* Subtitle / Instructions */
+        p.instructions {
+            font-size: 1.1em;
+            margin-bottom: 20px;
+            color: #555;
+            line-height: 1.4;
+        }
+
+        /* Game grid area */
+        .game-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr); /* 3 columns */
+            gap: 15px; /* Spacing between squares */
+            width: 100%; /* Occupy full width of container */
+            max-width: 450px; /* Max width for the grid itself */
+            margin: 20px auto;
+        }
+
+        /* Individual grid square */
+        .grid-square {
+            width: 100%;
+            padding-bottom: 100%; /* Creates a perfect square based on width */
+            position: relative;
+            background-color: #bbdefb; /* Lighter blue for squares */
+            border: 3px solid #64b5f6; /* Blue border */
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 3em; /* Emoji size */
+            transition: all 0.2s ease-in-out;
+            user-select: none; /* Prevent text selection */
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+        }
+
+        .grid-square:hover:not(.revealed):not(.found) {
+            background-color: #90caf9; /* Lighter blue on hover */
+            transform: translateY(-3px); /* Slight lift */
+            box-shadow: 0 6px 15px rgba(0,0,0,0.12);
+        }
+
+        .grid-square.revealed {
+            background-color: #e0e0e0; /* Grey when clicked (incorrect) */
+            cursor: default;
+        }
+
+        .grid-square.found {
+            background-color: #ffeb3b; /* Yellow for the found gift */
+            border-color: #fdd835;
+            transform: scale(1.05); /* Pop out effect */
+            box-shadow: 0 8px 20px rgba(255, 235, 59, 0.4);
+            cursor: default;
+        }
+
+        /* Info container (attempts) */
+        .info-container {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #4CAF50; /* Green for attempts */
+            margin-top: 20px;
+            padding: 10px 15px;
+            background-color: #e8f5e9; /* Light green background */
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Button styling */
+        .game-button {
+            background: linear-gradient(180deg, #4CAF50, #45a049); /* Green gradient */
+            color: white;
+            padding: 12px 28px;
+            border: none;
+            border-radius: 28px; /* More rounded */
+            cursor: pointer;
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-top: 30px;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 15px rgba(76, 175, 80, 0.35);
+        }
+
+        .game-button:hover {
+            background: linear-gradient(180deg, #45a049, #3d8c41);
+            box-shadow: 0 9px 22px rgba(76, 175, 80, 0.45);
+            transform: translateY(-3px);
+        }
+
+        .game-button:active {
+            background: linear-gradient(180deg, #3d8c41, #367c39);
+            transform: translateY(0);
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.25);
+        }
+
+        /* Message box styling */
+        .message-box {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7); /* Darker overlay */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .message-box.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .message-content {
+            background-color: #ffffff;
+            padding: 40px 50px;
+            border-radius: 20px;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            max-width: 85%;
+            font-size: 1.4em;
+            color: #2c3e50;
+        }
+
+        .message-content h2 {
+            font-family: 'Pacifico', cursive;
+            margin-top: 0;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+        .message-content h2.win { color: #4CAF50; } /* Green for win */
+        .message-content h2.lose { color: #e74c3c; } /* Red for lose */
+
+        .message-content p {
+            margin-bottom: 30px;
+            line-height: 1.5;
+            font-size: 1.1em;
+        }
+
+        .message-content .close-button {
+            background: linear-gradient(180deg, #3498db, #2980b9); /* Blue gradient */
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+        }
+
+        .message-content .close-button:hover {
+            background: linear-gradient(180deg, #2980b9, #24719c);
+            box-shadow: 0 8px 20px rgba(52, 152, 219, 0.4);
+            transform: translateY(-2px);
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 600px) {
+            .game-container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 2.2em;
+            }
+
+            p.instructions {
+                font-size: 1em;
+            }
+
+            .game-grid {
+                gap: 10px;
+                max-width: 300px;
+            }
+
+            .grid-square {
+                font-size: 2.5em;
+                border-width: 2px;
+                border-radius: 8px;
+            }
+
+            .info-container {
+                font-size: 1em;
+                padding: 8px 12px;
+            }
+
+            .game-button {
+                padding: 10px 22px;
+                font-size: 1em;
+            }
+
+            .message-content {
+                padding: 30px;
+                font-size: 1.2em;
+            }
+
+            .message-content h2 {
+                font-size: 2em;
+            }
+
+            .message-content p {
+                font-size: 0.9em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>Happy Father's Day! 👨‍👧‍👦</h1>
+        <p class="instructions">Help us find Dad's special gift! Click on the boxes to reveal what's inside. You have <span id="attemptsDisplay">4</span> attempts!</p>
+        <div id="gameGrid" class="game-grid">
+            <!-- Grid squares will be generated here by JavaScript -->
+        </div>
+        <div id="attemptsInfo" class="info-container">
+            Attempts Left: <span id="currentAttempts">4</span>
+        </div>
+        <button id="startButton" class="game-button">Start Game</button>
+    </div>
+
+    <!-- Message box for game status -->
+    <div id="messageBox" class="message-box">
+        <div class="message-content">
+            <h2 id="messageTitle"></h2>
+            <p id="messageText"></p>
+            <button id="closeMessageButton" class="close-button">Play Again</button>
+        </div>
+    </div>
+
+    <script>
+        const gameGrid = document.getElementById('gameGrid');
+        const attemptsDisplay = document.getElementById('attemptsDisplay');
+        const currentAttemptsSpan = document.getElementById('currentAttempts');
+        const startButton = document.getElementById('startButton');
+        const messageBox = document.getElementById('messageBox');
+        const messageTitle = document.getElementById('messageTitle');
+        const messageText = document.getElementById('messageText');
+        const closeMessageButton = document.getElementById('closeMessageButton');
+
+        let attempts = 4;
+        let giftLocation = -1; // Index of the hidden gift
+        let gameActive = false;
+        const totalSquares = 9; // 3x3 grid
+
+        // Emojis for non-gift items
+        const nonGiftEmojis = ['👔', '☕', '🛠️', '⚽', '📚', '🎶', '⌚', '🧔'];
+        // **NEW**: Prizes for the gift box
+        const prizeEmojis = ['🏆 Trophy', '✨ Sparkles', '⭐ Star', '💎 Diamond', '🎉 Party Popper', '👑 Crown'];
+        let foundPrizeEmoji = ''; // To store the specific prize emoji found
+
+        /**
+         * Initializes the game board by creating grid squares and setting a random gift location.
+         */
+        function initializeGame() {
+            gameGrid.innerHTML = ''; // Clear previous grid
+            attempts = 4; // Reset to 4 attempts on new game
+            attemptsDisplay.textContent = attempts;
+            currentAttemptsSpan.textContent = attempts;
+            gameActive = true;
+            startButton.style.display = 'none'; // Hide start button once game starts
+            messageBox.classList.remove('show'); // Hide message box
+
+            // Randomly determine the gift location
+            giftLocation = Math.floor(Math.random() * totalSquares);
+
+            for (let i = 0; i < totalSquares; i++) {
+                const square = document.createElement('div');
+                square.classList.add('grid-square');
+                square.dataset.index = i; // Store index for identification
+
+                // Add click listener
+                square.addEventListener('click', handleSquareClick);
+                gameGrid.appendChild(square);
+            }
+        }
+
+        /**
+         * Handles a click event on a grid square.
+         * @param {Event} event - The click event object.
+         */
+        function handleSquareClick(event) {
+            if (!gameActive) return; // Do nothing if game is not active
+
+            const clickedSquare = event.target;
+            const index = parseInt(clickedSquare.dataset.index);
+
+            // If this square has already been revealed, do nothing
+            if (clickedSquare.classList.contains('revealed') || clickedSquare.classList.contains('found')) {
+                return;
+            }
+
+            // Check if the clicked square contains the gift
+            if (index === giftLocation) {
+                // Select a random prize and store its emoji
+                const randomPrizeIndex = Math.floor(Math.random() * prizeEmojis.length);
+                foundPrizeEmoji = prizeEmojis[randomPrizeIndex]; // Store the full prize string
+
+                // Display the prize emoji in the square
+                clickedSquare.textContent = foundPrizeEmoji.split(' ')[0]; // Just the emoji part
+                clickedSquare.classList.add('found');
+                gameActive = false; // End game
+                showMessage("You Found It!", `🎉 Congratulations! You found Dad's special Father's Day gift: **${foundPrizeEmoji}**!`, 'win');
+            } else {
+                // Not the gift, reveal a random non-gift emoji
+                const randomEmoji = nonGiftEmojis[Math.floor(Math.random() * nonGiftEmojis.length)];
+                clickedSquare.textContent = randomEmoji;
+                clickedSquare.classList.add('revealed');
+                attempts--;
+                attemptsDisplay.textContent = attempts;
+                currentAttemptsSpan.textContent = attempts;
+
+                if (attempts === 0) {
+                    gameActive = false; // End game
+                    // Reveal the gift location if the game is lost (show the generic gift box emoji)
+                    gameGrid.children[giftLocation].textContent = '🎁';
+                    gameGrid.children[giftLocation].classList.add('found'); // Mark it as found even if lost
+                    showMessage("Game Over!", "😞 Oh no! You ran out of attempts. The gift was here!", 'lose');
+                }
+            }
+        }
+
+        /**
+         * Shows a message box with game status.
+         * @param {string} title - The title for the message box.
+         * @param {string} message - The main message content.
+         * @param {string} type - 'win' or 'lose' to apply appropriate styling.
+         */
+        function showMessage(title, message, type) {
+            messageTitle.textContent = title;
+            messageText.innerHTML = message; // Use innerHTML for emojis/bolding
+            messageTitle.className = ''; // Clear previous classes
+            messageTitle.classList.add(type); // Add win/lose class
+            messageBox.classList.add('show');
+            startButton.style.display = 'block'; // Show start button for replay
+            startButton.textContent = "Play Again"; // Change button text
+        }
+
+        // Event Listeners
+        startButton.addEventListener('click', initializeGame);
+        closeMessageButton.addEventListener('click', () => {
+            messageBox.classList.remove('show');
+            initializeGame(); // Restart game after closing message
+        });
+
+        // Initial setup when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            startButton.textContent = "Start Game";
+            attemptsDisplay.textContent = attempts;
+            currentAttemptsSpan.textContent = attempts;
+            gameActive = false; // Game starts inactive, waiting for user to click Start
+        });
+    </script>
+
+
+</body></html>
